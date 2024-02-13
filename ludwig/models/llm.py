@@ -267,9 +267,11 @@ class LLM(BaseModel):
         )
 
         # Wrap with flash attention backend for faster generation
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False) if (
-            torch.cuda.is_available() and self.curr_device.type == "cuda"
-        ) else contextlib.nullcontext():
+        with (
+            torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False)
+            if (torch.cuda.is_available() and self.curr_device.type == "cuda")
+            else contextlib.nullcontext()
+        ):
             # TODO (jeffkinnison): Determine why the 8-bit `SCB` and `CB` matrices are deleted in the forward pass
             model_outputs = self.model(input_ids=self.model_inputs, attention_mask=self.attention_masks).get(LOGITS)
 
@@ -330,9 +332,11 @@ class LLM(BaseModel):
                 input_lengths.append(input_ids_sample_no_padding.shape[1])
 
                 # Wrap with flash attention backend for faster generation
-                with torch.backends.cuda.sdp_kernel(
-                    enable_flash=True, enable_math=False, enable_mem_efficient=False
-                ) if (torch.cuda.is_available() and self.curr_device.type == "cuda") else contextlib.nullcontext():
+                with (
+                    torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False)
+                    if (torch.cuda.is_available() and self.curr_device.type == "cuda")
+                    else contextlib.nullcontext()
+                ):
                     # Generate text using the model
                     model_outputs = self.model.generate(
                         input_ids=input_ids_sample_no_padding,
@@ -360,7 +364,7 @@ class LLM(BaseModel):
 
         # Return
 
-            :return (bool): whether merge_and_unload should be done.
+        :return (bool): whether merge_and_unload should be done.
         """
         return (
             self.config_obj.adapter is not None
